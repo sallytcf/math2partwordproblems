@@ -170,7 +170,6 @@ function render(){
     partsHTML+=mkPart(curQ,i);
     if(!ST[curQ][i].a){break;}
   }
-  // Check if all parts of this question are answered
   const allDone=ST[curQ].every(s=>s.a);
   const nextBtn=allDone&&curQ<QS.length-1?`<button class="next-btn" onclick="nextQ()">Next Question ➜</button>`:'';
   const lastBtn=allDone&&curQ===QS.length-1?`<button class="next-btn" style="background:linear-gradient(90deg,#6A1B9A,#8E24AA);">🏅 All Done! Great work!</button>`:'';
@@ -220,7 +219,6 @@ function getNumTile(val,co){
 }
 
 function svgArrow(x1,x2,y,color,id,ans,qi,pi,grp,done,label,dir){
-  // dir: 'above' = label above line, 'below' = label below line
   const above = dir !== 'below';
   const mid=(x1+x2)/2;
   const ah=9,aw=12;
@@ -228,13 +226,14 @@ function svgArrow(x1,x2,y,color,id,ans,qi,pi,grp,done,label,dir){
   const rHead=`<polygon points="${x2},${y} ${x2-aw},${y-ah} ${x2-aw},${y+ah}" fill="${color}"/>`;
   const line=`<line x1="${x1+aw}" y1="${y}" x2="${x2-aw}" y2="${y}" stroke="${color}" stroke-width="2.5"/>`;
   if(done){
-    const textY = above ? y-8 : y+18;
+    const textY = above ? y-14 : y+28;
     return`${line}${lHead}${rHead}<text x="${mid}" y="${textY}" text-anchor="middle" font-family="Comic Sans MS,Comic Sans,cursive" font-size="20" font-weight="900" fill="${color}">${label}</text>`;
   }
   regS(id,String(ans),qi,pi,grp);
-  // slot: above = just above the line, below = just below
-  const foY = above ? y-38 : y+4;
-  const slotEl=`<foreignObject x="${mid-75}" y="${foY}" width="150" height="34">
+  
+  // HEIGHT SET TO 54 TO PREVENT CUTTING OFF THE DOTTED BOX
+  const foY = above ? y-56 : y+8;
+  const slotEl=`<foreignObject x="${mid-75}" y="${foY}" width="150" height="54">
     <div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;justify-content:center;align-items:center;width:100%;height:100%;">
       <div class="ds" data-slot="${id}" id="${id}">?</div>
     </div>
@@ -254,37 +253,44 @@ function compModel(p,qi,pi,done){
   const lessBarY=35;
   const moreBarY=lessBarY+barH+5;
   const arrowBotY=moreBarY+barH+18;
-  const svgH=arrowBotY+55; 
+  
   const totalW=W+NC+VLW+80; 
-  const viewBoxY = -35; 
-  const viewBoxH = svgH + 70; 
+  const viewBoxY = -65; 
+  const svgH = arrowBotY + 80;
+  const viewBoxH = svgH - viewBoxY; 
+  
   const valL = p.u === 'vL' ? '?' : p.vL;
   const valD = p.u === 'vD' ? '?' : p.vD;
   const valM = p.u === 'vM' ? '?' : p.vM;
+  
   function nameTxt(x,y,label){
     return `<text x="${x}" y="${y}" text-anchor="end" font-family="Comic Sans MS,Comic Sans,cursive" font-size="14" font-weight="900" fill="#1A237E">${label}</text>`;
   }
   function nameSlot(id,ans,x,y){
     regS(id,ans,qi,pi,grp);
-    return `<foreignObject x="${x-150}" y="${y-25}" width="150" height="50">
+    return `<foreignObject x="${x-150}" y="${y-26}" width="150" height="54">
       <div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;justify-content:flex-end;align-items:center;width:100%;height:100%;">
         <div class="ns" data-slot="${id}" id="${id}" data-type="name">?</div>
       </div>
     </foreignObject>`;
   }
+  
   const lessMidY = lessBarY+barH/2;
   const moreMidY = moreBarY+barH/2;
   const nameX = NC; 
+  
   const snl = done ? nameTxt(nameX-4, lessMidY+5, p.nL) : nameSlot(`${grp}nl`,p.nL, nameX-4, lessMidY);
   const snm = done ? nameTxt(nameX-4, moreMidY+5, p.nM) : nameSlot(`${grp}nm`,p.nM, nameX-4, moreMidY);
   const arr1 = svgArrow(barX, barX+shortW, arrowTopY, '#222', `${grp}vl`, valL, qi, pi, grp, done, valL, 'above');
   const arr2 = svgArrow(barX+shortW, barX+W, arrowTopY, '#c62828', `${grp}vd`, valD, qi, pi, grp, done, valD, 'above');
   const arr3 = svgArrow(barX, barX+W, arrowBotY, '#222', `${grp}vm`, valM, qi, pi, grp, done, valM, 'below');
+  
   const lessBlue=`<rect x="${barX}" y="${lessBarY}" width="${shortW}" height="${barH}" rx="6" fill="#4FC3F7" stroke="#0288d1" stroke-width="3"/>`;
   const lessDash=`<rect x="${barX+shortW}" y="${lessBarY}" width="${diffW}" height="${barH}" rx="6" fill="#FFCDD2" stroke="#e57373" stroke-width="3" stroke-dasharray="8,4"/>
     <text x="${barX+shortW+diffW/2}" y="${lessBarY+barH/2+5}" text-anchor="middle" font-family="Comic Sans MS,Comic Sans,cursive" font-size="18" font-weight="900" fill="#c62828">difference</text>`;
   const moreYellow=`<rect x="${barX}" y="${moreBarY}" width="${W}" height="${barH}" rx="6" fill="#FFD54F" stroke="#c8a000" stroke-width="3"/>`;
   const vline=`<rect x="${NC}" y="${lessBarY-arrowTopY+5}" width="${VLW}" height="${moreBarY+barH-lessBarY+arrowTopY}" rx="2" fill="#222"/>`;
+  
   let tileHtml='';
   if(!done){
     tileHtml+=`<div class="tile name-tile" draggable="true" data-val="${p.nL}" data-type="name">${p.nL}</div>`;
@@ -294,6 +300,7 @@ function compModel(p,qi,pi,done){
     tileHtml+=getNumTile(valM, p.co);
   }
   const tiles=done?'':`<div class="tiles-area" id="tb${qi}${pi}">${tileHtml}</div>`;
+  
   return `${tiles}
 <div style="overflow:visible; padding-bottom:10px;">
 <svg style="overflow:visible;display:block;max-width:100%;" width="${totalW}" height="${viewBoxH}" viewBox="-60 ${viewBoxY} ${totalW} ${viewBoxH}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -318,28 +325,35 @@ function pwModel(p,qi,pi,done){
   const valT = p.u === 'vT' ? '?' : p.vT;
   const leftW=Math.round(W*p.vA/p.vT);
   const rightW=W-leftW;
-  const arrowTopY=14, barY=58, arrowBotY=barY+barH+18, svgH=arrowBotY+55;
+  
+  const arrowTopY=14, barY=58, arrowBotY=barY+barH+18;
   const totalW=W+80;
-  const viewBoxY = -35; 
-  const viewBoxH = svgH + 70; 
+  const viewBoxY = -65; 
+  const svgH = arrowBotY + 80;
+  const viewBoxH = svgH - viewBoxY; 
+  
   const arrTop=svgArrow(0,W,arrowTopY,'#222',`${grp}t`,valT,qi,pi,grp,done,valT,'above');
   const arrBL=svgArrow(0,leftW,arrowBotY,'#222',`${grp}va`,valA,qi,pi,grp,done,valA,'below');
   const arrBR=svgArrow(leftW,W,arrowBotY,'#222',`${grp}vb`,valB,qi,pi,grp,done,valB,'below');
+  
   function nameInBar(id,ans,cx,cy){
     if(done) return `<text x="${cx}" y="${cy+5}" text-anchor="middle" font-family="Comic Sans MS,Comic Sans,cursive" font-size="13" font-weight="900" fill="#1A237E">${ans}</text>`;
     regS(id,ans,qi,pi,grp);
-    return `<foreignObject x="${cx-75}" y="${cy-25}" width="150" height="50">
+    return `<foreignObject x="${cx-75}" y="${cy-26}" width="150" height="54">
       <div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;justify-content:center;align-items:center;width:100%;height:100%;">
         <div class="ns" data-slot="${id}" id="${id}" data-type="name">?</div>
       </div>
     </foreignObject>`;
   }
+  
   const nA=nameInBar(`${grp}na`,p.nA,leftW/2,barY+barH/2);
   const nB=nameInBar(`${grp}nb`,p.nB,leftW+rightW/2,barY+barH/2);
+  
   const barLeft=`<rect x="0" y="${barY}" width="${leftW}" height="${barH}" rx="0" fill="#FFD54F" stroke="#222" stroke-width="3"/>`;
   const barRight=`<rect x="${leftW}" y="${barY}" width="${rightW}" height="${barH}" rx="0" fill="#4FC3F7" stroke="#222" stroke-width="3" stroke-dasharray=""/>`;
   const barBorder=`<rect x="0" y="${barY}" width="${W}" height="${barH}" rx="6" fill="none" stroke="#222" stroke-width="3"/>`;
   const divider=`<line x1="${leftW}" y1="${barY}" x2="${leftW}" y2="${barY+barH}" stroke="#222" stroke-width="3"/>`;
+  
   let tileHtml='';
   if(!done){
     [p.nA,p.nB].forEach(n=>tileHtml+=`<div class="tile name-tile" draggable="true" data-val="${n}" data-type="name">${n}</div>`);
@@ -348,6 +362,7 @@ function pwModel(p,qi,pi,done){
     tileHtml+=getNumTile(valT, p.co);
   }
   const tiles=done?'':`<div class="tiles-area" id="tb${qi}${pi}">${tileHtml}</div>`;
+  
   return `${tiles}
 <div style="overflow:visible; padding-bottom:10px;">
 <svg style="overflow:visible;display:block;max-width:100%;" width="${totalW}" height="${viewBoxH}" viewBox="-90 ${viewBoxY} ${totalW} ${viewBoxH}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -413,7 +428,6 @@ function celebrate(){
   div.className='celebrate';
   div.innerHTML=`<div class="celebrate-msg">${msg}</div>`;
   document.body.appendChild(div);
-  // Sound
   try{
     const ctx=new(window.AudioContext||window.webkitAudioContext)();
     const notes=[523,659,784,1047];
