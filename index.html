@@ -1,493 +1,687 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Word Problem Explorer!</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:'Comic Sans MS','Comic Sans',cursive;}
-:root{--blue:#1565C0;--blue-light:#E3F2FD;--green:#2E7D32;--green-light:#E8F5E9;--green-mid:#66BB6A;--orange:#E65100;--red:#C62828;--red-light:#FFEBEE;--gray:#455A64;--gray-light:#ECEFF1;--text:#1A237E;--bar-yellow:#FFD54F;--bar-blue:#4FC3F7;--bar-diff:#FFCDD2;}
-body{background:linear-gradient(135deg,#E3F2FD 0%,#F3E5F5 60%,#E8F5E9 100%);min-height:100vh;color:var(--text);}
-.header{background:linear-gradient(90deg,#1A237E,#6A1B9A);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;}
-.header h1{font-size:2.4rem;font-weight:900;color:#fff;}
-.header-badge{background:rgba(255,255,255,0.2);color:#fff;font-size:1.4rem;font-weight:800;padding:9px 22px;border-radius:20px;}
-.nav{background:#fff;border-bottom:4px solid #BBDEFB;padding:12px 24px;display:flex;align-items:center;gap:8px;overflow-x:auto;}
-.nav-label{font-size:1.4rem;font-weight:900;color:var(--gray);text-transform:uppercase;white-space:nowrap;margin-right:8px;}
-.q-btn{width:56px;height:56px;border-radius:50%;border:3px solid #BBDEFB;background:#fff;font-weight:900;font-size:1.4rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;color:var(--gray);flex-shrink:0;}
-.q-btn:hover{background:var(--blue-light);border-color:var(--blue);}
-.q-btn.active{background:var(--blue);color:#fff;border-color:var(--blue);transform:scale(1.1);}
-.q-btn.demo{border-color:var(--orange);}
-.q-btn.demo.active{background:var(--orange);border-color:var(--orange);}
-.demo-pill{background:var(--orange);color:#fff;font-size:1rem;font-weight:900;padding:3px 10px;border-radius:10px;margin-left:15px;vertical-align:middle;}
-.main{width:100%;margin:0;padding:22px 28px;}
-.q-card{background:#fff;border-radius:0;box-shadow:0 8px 30px rgba(26,35,126,0.12);overflow:hidden;margin-bottom:22px;width:100%;}
-.q-top{background:linear-gradient(90deg,#1A237E,#283593);padding:22px 40px;display:flex;align-items:flex-start;gap:14px;}
-.q-num{background:rgba(255,255,255,0.25);border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:900;color:#fff;flex-shrink:0;margin-top:10px;}
-.q-problem{font-size:50px;font-weight:700;color:#fff;line-height:1.4;margin:0;}
-.parts-stack{display:flex;flex-direction:column;}
-.part-col{padding:24px 40px;border-bottom:3px dashed #BBDEFB;}
-.part-col:last-child{border-bottom:none;}
-.part-tag{font-size:2rem;font-weight:900;color:var(--blue);letter-spacing:2px;margin-bottom:12px;}
-.step-block{border-radius:13px;border:3px solid #BBDEFB;margin-bottom:11px;overflow:hidden;}
-.step-block.locked{opacity:0.25;pointer-events:none;}
-.step-block.done{border-color:var(--green-mid);}
-.step-head{background:var(--blue-light);padding:10px 15px;display:flex;align-items:center;gap:10px;}
-.step-circle{width:30px;height:30px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:900;flex-shrink:0;}
-.step-block.done .step-circle{background:var(--green);}
-.step-title-txt{font-size:1.6rem;font-weight:900;color:var(--text);}
-.step-body{padding:15px;background:#fff;display:none;}
-.step-body.open{display:block;}
-.hint-options{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;}
-.hint-btn{background:#fff;border:3px solid #BBDEFB;border-radius:11px;padding:14px 30px;font-size:1.7rem;font-weight:900;cursor:pointer;color:var(--text);transition:all 0.2s;}
-.hint-btn:hover{border-color:var(--blue);background:var(--blue-light);}
-.hint-btn.correct{background:var(--green-light);border-color:var(--green-mid);color:var(--green);pointer-events:none;}
-.hint-btn.wrong{background:var(--red-light);border-color:var(--red);color:var(--red);animation:shake 0.35s;}
-@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-8px);}75%{transform:translateX(8px)};}
-.tiles-area{display:flex;gap:9px;flex-wrap:wrap;padding:14px;background:var(--gray-light);border-radius:11px;margin-bottom:13px;min-height:52px;width:100%;}
-.tile{background:#FFFDE7;border:3px solid #F9A825;border-radius:9px;padding:12px 24px;font-size:1.8rem;font-weight:900;cursor:grab;user-select:none;color:var(--text);white-space:nowrap;display:inline-flex;align-items:center;transition:opacity 0.15s;}
-.tile.name-tile{background:#E8EAF6;border-color:#5C6BC0;color:#1A237E;}
-.tile.op-tile{background:#E3F2FD;border-color:#1565C0;color:#1565C0;font-size:1.35rem;min-width:48px;justify-content:center;}
-.tile.carried-over{background:#F3E5F5;border-color:#9C27B0;color:#6A1B9A;}
-.tile.dragging{opacity:0.35;}
-.ds{border:3px dashed #1565C0;border-radius:8px;min-width:70px;height:42px;display:inline-flex;align-items:center;justify-content:center;background:#E3F2FD;font-size:1.6rem;font-weight:900;color:#1565C0;transition:all 0.2s;padding:0 8px;cursor:default;}
-.ds.over{border-color:#0D47A1;background:#BBDEFB;color:#0D47A1;}
-.ds.ok{border-style:solid;border-color:var(--green-mid);background:var(--green-light);color:var(--green);}
-.ds.bad{border-color:var(--red);background:var(--red-light);animation:shake 0.35s;}
-.ns{border:3px dashed #3949AB;border-radius:8px;min-width:100px;height:44px;display:inline-flex;align-items:center;justify-content:center;background:#E8EAF6;font-size:1.6rem;font-weight:900;color:#3949AB;transition:all 0.2s;padding:0 12px;cursor:default;}
-.ns.over{border-color:#283593;background:#C5CAE9;color:#283593;}
-.ns.ok{border-style:solid;border-color:var(--green-mid);background:var(--green-light);color:var(--green);}
-.ns.bad{border-color:var(--red);background:var(--red-light);animation:shake 0.35s;}
-.es{border:3px dashed #90CAF9;border-radius:9px;min-width:90px;height:70px;display:inline-flex;align-items:center;justify-content:center;background:#F8FBFF;font-size:1.8rem;font-weight:900;color:#90CAF9;transition:all 0.2s;}
-.es.over{border-color:var(--blue);background:var(--blue-light);}
-.es.ok{border-style:solid;border-color:var(--green-mid);background:var(--green-light);color:var(--green);}
-.es.bad{border-color:var(--red);background:var(--red-light);animation:shake 0.35s;}
-.ops{border:3px dashed #1565C0;border-radius:50%;width:70px;height:70px;min-width:70px;display:inline-flex;align-items:center;justify-content:center;background:#E3F2FD;font-size:1.8rem;font-weight:900;color:#90CAF9;transition:all 0.2s;flex-shrink:0;}
-.ops.over{border-color:var(--blue);background:#BBDEFB;color:var(--blue);}
-.ops.ok{border-style:solid;border-color:var(--blue);background:var(--blue);color:#fff;}
-.ops.bad{border-color:var(--red);background:var(--red-light);animation:shake 0.35s;}
-.eq-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:6px 0;}
-.eq-eq{font-size:2.2rem;font-weight:900;color:var(--text);}
-.ans-box{min-width:90px;height:70px;border-radius:9px;border:3px solid;display:inline-flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:900;}
-.ans-box.pending{border-color:#ccc;background:#f5f5f5;color:#bbb;}
-.ans-box.revealed{border-color:var(--green-mid);background:var(--green-light);color:var(--green);}
-.ans-statement{font-size:1.8rem;font-weight:700;color:var(--text);margin-bottom:11px;}
-.ans-blank{display:inline-block;border-bottom:3px solid var(--blue);min-width:68px;text-align:center;padding:2px 6px;}
-.ans-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
-.ans-input{border:3px solid #90CAF9;border-radius:9px;padding:12px 20px;font-size:1.8rem;font-weight:900;color:var(--text);width:220px;outline:none;}
-.ans-input:focus{border-color:var(--blue);}
-.ans-input.correct{border-color:var(--green-mid);background:var(--green-light);color:var(--green);}
-.ans-input.wrong{border-color:var(--red);background:var(--red-light);animation:shake 0.35s;}
-.check-btn{background:var(--blue);color:#fff;border:none;border-radius:9px;padding:14px 30px;font-size:1.8rem;font-weight:900;cursor:pointer;}
-.check-btn:hover{background:#0D47A1;}
-.ok-msg{color:var(--green);font-size:1.8rem;font-weight:900;margin-top:7px;}
-.err-msg{color:var(--red);font-size:1.5rem;font-weight:800;margin-top:5px;min-height:16px;}
-.next-btn{display:block;margin:18px auto 8px;background:linear-gradient(90deg,#2E7D32,#43A047);color:#fff;border:none;border-radius:16px;padding:18px 48px;font-size:1.8rem;font-weight:900;cursor:pointer;font-family:"Comic Sans MS","Comic Sans",cursive;box-shadow:0 4px 14px rgba(46,125,50,0.3);transition:transform 0.15s;}
-.next-btn:hover{transform:scale(1.05);}
-.celebrate{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;display:flex;align-items:center;justify-content:center;}
-.celebrate-msg{background:linear-gradient(135deg,#FFD700,#FFA000);color:#1A237E;font-size:2.5rem;font-weight:900;padding:28px 48px;border-radius:24px;box-shadow:0 8px 40px rgba(0,0,0,0.25);animation:popIn 0.4s ease;}
-@keyframes popIn{0%{transform:scale(0.3);opacity:0;}70%{transform:scale(1.1);}100%{transform:scale(1);opacity:1;}}
-</style>
-</head>
-<body>
-<div class="header">
-  <h1>🧭 The Word Problem Explorer!</h1>
-  <div class="header-badge" id="hdrBadge">Question 1 of 10</div>
-</div>
-<div class="nav">
-  <span class="nav-label">Questions:</span>
-  <div id="navRow" style="display:flex;gap:8px;"></div>
-</div>
-<div class="main"><div id="qArea"></div></div>
-<script>
-const QS=[
-  {num:1,demo:true,text:"Hamza is 140 cm tall. Jarrett is 115 cm tall.",parts:[
-    {lbl:"a",q:"How much taller is Hamza than Jarrett?",type:"comp",hint:"Who is taller?",hO:["Hamza","Jarrett"],hA:"Hamza",nM:"Hamza",nL:"Jarrett",vM:140,vL:115,vD:25,u:"vD",eN:["140","115"],eO:"-",eA:"25",aV:"25",st:["Hamza is ","25"," cm taller than Jarrett."]},
-    {lbl:"b",q:"What is their total height?",type:"pw",hint:"What are we finding?",hO:["Total height","The difference"],hA:"Total height",nA:"Hamza",nB:"Jarrett",vA:140,vB:115,vT:255,u:"vT",eN:["140","115"],eO:"+",eA:"255",aV:"255",st:["Their total height is ","255"," cm."]}
-  ]},
-  {num:2,demo:true,text:"Titus has 150 pens. Khidr has 80 more pens than Titus.",parts:[
-    {lbl:"a",q:"How many pens does Khidr have?",type:"comp",hint:"Who has more pens?",hO:["Titus","Khidr"],hA:"Khidr",nM:"Khidr",nL:"Titus",vM:230,vL:150,vD:80,u:"vM",eN:["150","80"],eO:"+",eA:"230",aV:"230",st:["Khidr has ","230"," pens."]},
-    {lbl:"b",q:"How many pens do they have in all?",type:"pw",hint:"What are we finding?",hO:["Total pens","The difference"],hA:"Total pens",nA:"Titus",nB:"Khidr",vA:150,vB:230,vT:380,u:"vT",eN:["150","230"],eO:"+",eA:"380",aV:"380",st:["They have ","380"," pens in all."]}
-  ]},
-  {num:3,demo:true,text:"Elena baked 400 cupcakes for a school fair. She baked 150 in the morning and the rest in the afternoon.",parts:[
-    {lbl:"a",q:"How many cupcakes did she bake in the afternoon?",type:"pw",hint:"What is the total?",hO:["400 cupcakes","150 cupcakes"],hA:"400 cupcakes",nA:"Morning",nB:"Afternoon",vA:150,vB:250,vT:400,u:"vB",eN:["400","150"],eO:"-",eA:"250",aV:"250",st:["Elena baked ","250"," cupcakes in the afternoon."]},
-    {lbl:"b",q:"How many more cupcakes did she bake in the afternoon than in the morning?",type:"comp",hint:"Did Elena bake more in the morning or afternoon?",hO:["Morning","Afternoon"],hA:"Afternoon",nM:"Afternoon",nL:"Morning",vM:250,vL:150,vD:100,u:"vD",eN:["250","150"],eO:"-",eA:"100",aV:"100",st:["She baked ","100"," more cupcakes in the afternoon."],co:{v:"250",l:"Afternoon — from (a)"}}
-  ]},
-  {num:4,demo:false,text:"Sarah has 180 stickers. Sofia has 60 fewer stickers than Sarah.",parts:[
-    {lbl:"a",q:"How many stickers does Sofia have?",type:"comp",hint:"Who has more stickers?",hO:["Sarah","Sofia"],hA:"Sarah",nM:"Sarah",nL:"Sofia",vM:180,vL:120,vD:60,u:"vL",eN:["180","60"],eO:"-",eA:"120",aV:"120",st:["Sofia has ","120"," stickers."]},
-    {lbl:"b",q:"How many stickers do they have altogether?",type:"pw",hint:"What are we finding?",hO:["Total stickers","The difference"],hA:"Total stickers",nA:"Sarah",nB:"Sofia",vA:180,vB:120,vT:300,u:"vT",eN:["180","120"],eO:"+",eA:"300",aV:"300",st:["They have ","300"," stickers altogether."]}
-  ]},
-  {num:5,demo:false,text:"Zelig sold 230 cups of lemonade at a carnival. Ishraq sold 80 fewer cups than Zelig.",parts:[
-    {lbl:"a",q:"How many cups did Ishraq sell?",type:"comp",hint:"Who sold more?",hO:["Zelig","Ishraq"],hA:"Zelig",nM:"Zelig",nL:"Ishraq",vM:230,vL:150,vD:80,u:"vL",eN:["230","80"],eO:"-",eA:"150",aV:"150",st:["Ishraq sold ","150"," cups."]},
-    {lbl:"b",q:"How many cups did they sell in all?",type:"pw",hint:"What are we finding?",hO:["Total cups","The difference"],hA:"Total cups",nA:"Zelig",nB:"Ishraq",vA:230,vB:150,vT:380,u:"vT",eN:["230","150"],eO:"+",eA:"380",aV:"380",st:["They sold ","380"," cups in all."]}
-  ]},
-  {num:6,demo:false,text:"There are 300 students in the school hall. 170 are boys and the rest are girls.",parts:[
-    {lbl:"a",q:"How many girls are there?",type:"pw",hint:"Are there more boys or girls?",hO:["More boys","More girls"],hA:"More boys",nA:"Boys",nB:"Girls",vA:170,vB:130,vT:300,u:"vB",eN:["300","170"],eO:"-",eA:"130",aV:"130",st:["There are ","130"," girls."]},
-    {lbl:"b",q:"How many more boys than girls are there?",type:"comp",hint:"Are there more boys or girls?",hO:["Boys","Girls"],hA:"Boys",nM:"Boys",nL:"Girls",vM:170,vL:130,vD:40,u:"vD",eN:["170","130"],eO:"-",eA:"40",aV:"40",st:["There are ","40"," more boys than girls."],co:{v:"130",l:"Girls — from (a)"}}
-  ]},
-  {num:7,demo:false,text:"A bag of biscuits and a bag of sweets weigh 500 g altogether. The bag of biscuits weighs 320 g.",parts:[
-    {lbl:"a",q:"How much does the bag of sweets weigh?",type:"pw",hint:"What is the total?",hO:["500 g","320 g"],hA:"500 g",nA:"Biscuits",nB:"Sweets",vA:320,vB:180,vT:500,u:"vB",eN:["500","320"],eO:"-",eA:"180",aV:"180",st:["The bag of sweets weighs ","180"," g."]},
-    {lbl:"b",q:"How much heavier is the bag of biscuits than the bag of sweets?",type:"comp",hint:"Which is heavier?",hO:["Biscuits","Sweets"],hA:"Biscuits",nM:"Biscuits",nL:"Sweets",vM:320,vL:180,vD:140,u:"vD",eN:["320","180"],eO:"-",eA:"140",aV:"140",st:["The biscuits are ","140"," g heavier."],co:{v:"180",l:"180"}}
-  ]},
-  {num:8,demo:false,text:"A book and a water bottle cost $120 altogether. The water bottle costs $45.",parts:[
-    {lbl:"a",q:"How much does the book cost?",type:"pw",hint:"What is the total?",hO:["$120","$80"],hA:"$120",nA:"Bottle",nB:"Book",vA:80,vB:40,vT:120,u:"vB",eN:["120","80"],eO:"-",eA:"40",aV:"40",st:["The book costs $","40","."]},
-    {lbl:"b",q:"How much more does the water bottle cost than the book?",type:"comp",hint:"Which costs more?",hO:["Book","Bottle"],hA:"Bottle",nM:"Bottle",nL:"Book",vM:80,vL:40,vD:40,u:"vD",eN:["80","40"],eO:"-",eA:"40",aV:"40",st:["The bottle costs $","40"," more."],co:{v:"40",l:"Book — from (a)"}}
-  ]},
-  {num:9,demo:false,text:"Ayfan baked 120 chocolate cookies and 150 vanilla cookies. She sold 130 cookies.",parts:[
-    {lbl:"a",q:"How many cookies were there altogether?",type:"pw",hint:"What are we finding?",hO:["Total cookies","Cookies sold"],hA:"Total cookies",nA:"Choc",nB:"Vanilla",vA:120,vB:150,vT:270,u:"vT",eN:["120","150"],eO:"+",eA:"270",aV:"270",st:["There were ","270"," cookies altogether."]},
-    {lbl:"b",q:"How many cookies were not sold?",type:"pw",hint:"What is the total?",hO:["270 cookies","130 cookies"],hA:"270 cookies",nA:"Sold",nB:"Not sold",vA:130,vB:140,vT:270,u:"vB",eN:["270","130"],eO:"-",eA:"140",aV:"140",st:["","140"," cookies were not sold."],co:{v:"270",l:"Total — from (a)"}}
-  ]},
-  {num:10,demo:false,text:"Luke is 130 cm tall. Naylah is 20 cm taller than Luke.",parts:[
-    {lbl:"a",q:"How tall is Naylah?",type:"comp",hint:"Who is taller?",hO:["Luke","Naylah"],hA:"Naylah",nM:"Naylah",nL:"Luke",vM:150,vL:130,vD:20,u:"vM",eN:["130","20"],eO:"+",eA:"150",aV:"150",st:["Naylah is ","150"," cm tall."]},
-    {lbl:"b",q:"Joanna is 15 cm shorter than Naylah. How tall is Joanna?",type:"comp",hint:"Who is taller?",hO:["Naylah","Joanna"],hA:"Naylah",nM:"Naylah",nL:"Joanna",vM:150,vL:135,vD:15,u:"vL",eN:["150","15"],eO:"-",eA:"135",aV:"135",st:["Joanna is ","135"," cm tall."],co:{v:"150",l:"150"}}
-  ]}
-];
-
-let curQ=0;
-let ST=QS.map(q=>q.parts.map(()=>({h:false,m:false,e:false,a:false})));
-let dragSrc=null;
-let SR={};
-function regS(id,ans,qi,pi,grp){SR[id]={ans:String(ans),qi,pi,grp};}
-function freeS(id){delete SR[id];}
-function openG(grp){return Object.values(SR).filter(s=>s.grp===grp).length;}
-
-function render(){
-  SR={};
-  document.getElementById('hdrBadge').textContent=`Question ${curQ+1} of ${QS.length}`;
-  buildNav();
-  const q=QS[curQ];
-  const dp=q.demo?`<span class="demo-pill">⭐ Demo</span>`:'';
-  let topHeaderText=q.text;
-  if(q.parts.length>0){topHeaderText+=`<br><span style="color:var(--bar-yellow);">(${q.parts[0].lbl})</span> ${q.parts[0].q}`;}
-  let partsHTML='';
-  for(let i=0;i<q.parts.length;i++){
-    if(i>0){
-      let rt=q.text;
-      for(let j=0;j<=i;j++){rt+=`<br><span style="color:var(--bar-yellow);">(${q.parts[j].lbl})</span> ${q.parts[j].q}`;}
-      partsHTML+=`<div class="q-top" style="align-items:flex-start;border-top:5px dashed #BBDEFB;margin-top:20px;" id="header-part-${i}">
-        <div class="q-problem" style="margin:0;font-size:40px;font-weight:700;line-height:1.4;color:#fff;width:100%;">${rt}</div>
-      </div>`;
+  <html lang="en">
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Word Problem Explorer!</title>
+  <style>
+  *{box-sizing:border-box;margin:0;padding:0;font-family:'Comic Sans MS','Comic Sans',cursive;}
+  :root{--blue:#1565C0;--blue-light:#E3F2FD;--green:#2E7D32;--green-light:#E8F5E9;--green-mid:#66BB6A;--orange:#E65100;--red:#C62828;--red-light:#FFEBEE;--gray:#455A64;--gray-light:#ECEFF1;--text:#1A237E;--bar-yellow:#FFD54F;--bar-blue:#4FC3F7;--bar-diff:#FFCDD2;}
+  body{background:linear-gradient(135deg,#E3F2FD 0%,#F3E5F5 60%,#E8F5E9 100%);min-height:100vh;height:100vh;margin:0;display:flex;flex-direction:column;overflow:hidden;color:var(--text);}
+  .header{background:linear-gradient(90deg,#1A237E,#6A1B9A);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+  .header h1{font-size:2.4rem;font-weight:900;color:#fff;}
+  .header-badge{background:rgba(255,255,255,0.2);color:#fff;font-size:1.4rem;font-weight:800;padding:9px 22px;border-radius:20px;}
+  .nav{background:#fff;border-bottom:4px solid #BBDEFB;padding:12px 24px;display:flex;align-items:center;gap:8px;overflow-x:auto;flex-shrink:0;}
+  .nav-label{font-size:1.4rem;font-weight:900;color:var(--gray);text-transform:uppercase;white-space:nowrap;margin-right:8px;}
+  .q-btn{width:56px;height:56px;border-radius:50%;border:3px solid #BBDEFB;background:#fff;font-weight:900;font-size:1.4rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;color:var(--gray);flex-shrink:0;}
+  .q-btn:hover{background:var(--blue-light);border-color:var(--blue);}
+  .q-btn.active{background:var(--blue);color:#fff;border-color:var(--blue);transform:scale(1.1);}
+  .q-btn.demo{border-color:var(--orange);}
+  .q-btn.demo.active{background:var(--orange);border-color:var(--orange);}
+  .demo-pill{background:var(--orange);color:#fff;font-size:1rem;font-weight:900;padding:3px 10px;border-radius:10px;margin-left:15px;vertical-align:middle;}
+  .main{width:100%;max-width:960px;margin:0 auto;padding:22px 28px;flex:1;overflow-y:auto;padding-bottom:100px;}
+  .q-card{background:#fff;border-radius:0;box-shadow:0 8px 30px rgba(26,35,126,0.12);overflow:hidden;margin-bottom:22px;width:100%;}
+  .q-top{background:linear-gradient(90deg,#1A237E,#283593);padding:22px 40px;display:flex;align-items:flex-start;gap:14px;}
+  .q-num{background:rgba(255,255,255,0.25);border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:900;color:#fff;flex-shrink:0;margin-top:10px;}
+  .q-problem{font-size:45px;font-weight:700;color:#fff;line-height:1.4;margin:0;}
+  .parts-stack{display:flex;flex-direction:column;}
+  .part-col{padding:24px 40px;border-bottom:3px dashed #BBDEFB;}
+  .part-col:last-child{border-bottom:none;}
+  .part-tag{font-size:2rem;font-weight:900;color:var(--blue);letter-spacing:2px;margin-bottom:12px;}
+  .step-block{border-radius:13px;border:3px solid #BBDEFB;margin-bottom:11px;overflow:hidden;}
+  .step-block.locked{opacity:0.25;pointer-events:none;}
+  .step-block.done{border-color:var(--green-mid);}
+  .step-head{background:var(--blue-light);padding:10px 15px;display:flex;align-items:center;gap:10px;}
+  .step-circle{width:36px;height:36px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:900;flex-shrink:0;}
+  .step-block.done .step-circle{background:var(--green);}
+  .step-title-txt{font-size:1.6rem;font-weight:900;color:var(--text);}
+  .step-body{padding:15px;background:#fff;display:none;}
+  .step-body.open{display:block;}
+  .hint-options{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;}
+  .hint-btn{background:#fff;border:3px solid #BBDEFB;border-radius:11px;padding:14px 30px;font-size:1.7rem;font-weight:900;cursor:pointer;color:var(--text);transition:all 0.2s;}
+  .hint-btn:hover{border-color:var(--blue);background:var(--blue-light);}
+  .hint-btn.correct{background:var(--green-light);border-color:var(--green-mid);color:var(--green);pointer-events:none;}
+  .hint-btn.wrong{background:var(--red-light);border-color:var(--red);color:var(--red);animation:shake 0.35s;}
+  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-8px);}75%{transform:translateX(8px)};}
+  .tiles-area{display:flex;gap:9px;flex-wrap:wrap;padding:14px;background:var(--gray-light);border-radius:11px;margin-bottom:13px;min-height:52px;width:100%;}
+  .tile{background:#FFFDE7;border:3px solid #F9A825;border-radius:9px;padding:12px 24px;font-size:1.8rem;font-weight:900;cursor:grab;user-select:none;color:var(--text);white-space:nowrap;display:inline-flex;align-items:center;transition:opacity 0.15s;}
+  .tile.name-tile{background:#E8EAF6;border-color:#5C6BC0;color:#1A237E;}
+  .tile.op-tile{background:#E3F2FD;border-color:#1565C0;color:#1565C0;font-size:1.8rem;min-width:60px;justify-content:center;}
+  .tile.carried-over{background:#F3E5F5;border-color:#9C27B0;color:#6A1B9A;}
+  .tile.dragging{opacity:0.35;}
+  .ds{border:3px dashed #1565C0;border-radius:8px;min-width:70px;height:42px;display:inline-flex;align-items:center;justify-content:center;background:#E3F2FD;font-size:1.6rem;font-weight:900;color:#1565C0;transition:all 0.2s;padding:0 8px;cursor:default;}
+  .ds.over{border-color:#0D47A1;background:#BBDEFB;color:#0D47A1;}
+  .ds.ok{border-style:solid;border-color:var(--green-mid);background:var(--green-light);color:var(--green);}
+  .ds.bad{border-color:var(--red);background:var(--red-light);animation:shake 0.35s;}
+  .ns{border:3px dashed #3949AB;border-radius:8px;min-width:100px;height:44px;display:inline-flex;align-items:center;justify-content:center;background:#E8EAF6;font-size:1.6rem;font-weight:900;color:#3949AB;transition:all 0.2s;padding:0 12px;cursor:default;}
+  .ns.over{border-color:#283593;background:#C5CAE9;color:#283593;}
+  .ns.ok{border-style:solid;border-color:var(--green-mid);background:var(--green-light);color:var(--green);}
+  .ns.bad{border-color:var(--red);background:var(--red-light);animation:shake 0.35s;}
+  .es{border:3px dashed #90CAF9;border-radius:9px;min-width:90px;height:70px;display:inline-flex;align-items:center;justify-content:center;background:#F8FBFF;font-size:1.8rem;font-weight:900;color:#90CAF9;transition:all 0.2s;}
+  .es.over{border-color:var(--blue);background:var(--blue-light);}
+  .es.ok{border-style:solid;border-color:var(--green-mid);background:var(--green-light);color:var(--green);}
+  .es.bad{border-color:var(--red);background:var(--red-light);animation:shake 0.35s;}
+  .ops{border:3px dashed #1565C0;border-radius:50%;width:70px;height:70px;min-width:70px;display:inline-flex;align-items:center;justify-content:center;background:#E3F2FD;font-size:1.8rem;font-weight:900;color:#90CAF9;transition:all 0.2s;flex-shrink:0;}
+  .ops.over{border-color:var(--blue);background:#BBDEFB;color:var(--blue);}
+  .ops.ok{border-style:solid;border-color:var(--blue);background:var(--blue);color:#fff;}
+  .ops.bad{border-color:var(--red);background:var(--red-light);animation:shake 0.35s;}
+  .eq-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:6px 0;}
+  .eq-eq{font-size:2.2rem;font-weight:900;color:var(--text);}
+  .ans-box{min-width:90px;height:70px;border-radius:9px;border:3px solid;display:inline-flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:900;}
+  .ans-box.pending{border-color:#ccc;background:#f5f5f5;color:#bbb;}
+  .ans-box.revealed{border-color:var(--green-mid);background:var(--green-light);color:var(--green);}
+  .ans-statement{font-size:1.8rem;font-weight:700;color:var(--text);margin-bottom:11px;}
+  .ans-blank{display:inline-block;border-bottom:3px solid var(--blue);min-width:68px;text-align:center;padding:2px 6px;}
+  .ans-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .ans-input{border:3px solid #90CAF9;border-radius:9px;padding:12px 20px;font-size:1.8rem;font-weight:900;color:var(--text);width:220px;outline:none;}
+  .ans-input:focus{border-color:var(--blue);}
+  .ans-input.correct{border-color:var(--green-mid);background:var(--green-light);color:var(--green);}
+  .ans-input.wrong{border-color:var(--red);background:var(--red-light);animation:shake 0.35s;}
+  .check-btn{background:var(--blue);color:#fff;border:none;border-radius:9px;padding:14px 30px;font-size:1.8rem;font-weight:900;cursor:pointer;}
+  .check-btn:hover{background:#0D47A1;}
+  .ok-msg{color:var(--green);font-size:1.8rem;font-weight:900;margin-top:7px;}
+  .err-msg{color:var(--red);font-size:1.5rem;font-weight:800;margin-top:5px;min-height:16px;}
+  .next-btn{display:block;margin:18px auto 8px;background:linear-gradient(90deg,#2E7D32,#43A047);color:#fff;border:none;border-radius:16px;padding:18px 48px;font-size:1.8rem;font-weight:900;cursor:pointer;font-family:'Comic Sans MS','Comic Sans',cursive;box-shadow:0 4px 14px rgba(46,125,50,0.3);transition:transform 0.15s;}
+  .next-btn:hover{transform:scale(1.05);}
+  .celebrate{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;display:flex;align-items:center;justify-content:center;}
+  .celebrate-msg{background:linear-gradient(135deg,#FFD700,#FFA000);color:#1A237E;font-size:2.5rem;font-weight:900;padding:28px 48px;border-radius:24px;box-shadow:0 8px 40px rgba(0,0,0,0.25);animation:popIn 0.4s ease;}
+  @keyframes popIn{0%{transform:scale(0.3);opacity:0;}70%{transform:scale(1.1);}100%{transform:scale(1);opacity:1;}}
+  
+  /* INTRO PAGE */
+  .intro-page{width:100%;min-height:calc(100vh - 140px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:32px;padding:32px 20px;}
+  .intro-images{display:flex;flex-direction:column;gap:24px;width:100%;max-width:900px;align-items:center;}
+  .intro-img{width:100%;max-width:860px;border-radius:20px;box-shadow:0 8px 32px rgba(0,0,0,0.18);display:block;}
+  .start-btn{background:linear-gradient(90deg,#1A237E,#6A1B9A);color:#fff;border:none;border-radius:20px;padding:22px 60px;font-size:2.2rem;font-weight:900;cursor:pointer;font-family:'Comic Sans MS','Comic Sans',cursive;box-shadow:0 6px 20px rgba(26,35,126,0.35);transition:transform 0.2s;margin-top:8px;}
+  .start-btn:hover{transform:scale(1.06);}
+  
+  /* DRAWING TOOLS CSS */
+  #drawCanvas {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    z-index: 9000; pointer-events: none; 
+  }
+  #drawCanvas.active {
+    pointer-events: auto; 
+    cursor: crosshair;
+  }
+  .draw-toolbar {
+    position: fixed; bottom: 20px; right: 20px; z-index: 9001;
+    background: #fff; padding: 12px 18px; border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2); border: 4px solid #BBDEFB;
+    display: flex; gap: 12px; align-items: center; transition: all 0.3s;
+  }
+  .draw-toggle {
+    background: var(--blue-light); color: var(--blue); border: 2px solid var(--blue);
+    padding: 8px 16px; border-radius: 12px; font-size: 1.4rem; font-weight: 900; cursor: pointer;
+  }
+  .draw-toggle.on { background: var(--blue); color: #fff; }
+  .color-picker { display: none; gap: 8px; align-items: center; }
+  .color-picker.show { display: flex; }
+  .color-btn {
+    width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff;
+    box-shadow: 0 0 0 2px #ccc; cursor: pointer; transition: transform 0.1s;
+  }
+  .color-btn.active { box-shadow: 0 0 0 3px var(--blue); transform: scale(1.15); }
+  .clear-btn {
+    background: #FFEBEE; color: #C62828; border: 2px solid #C62828;
+    padding: 6px 12px; border-radius: 10px; font-size: 1.2rem; font-weight: 900; cursor: pointer; margin-left: 5px;
+  }
+  .clear-btn:hover { background: #C62828; color: #fff; }
+  </style>
+  </head>
+  <body>
+  
+  <canvas id="drawCanvas"></canvas>
+  
+  <div class="draw-toolbar" id="drawToolbar">
+    <button class="draw-toggle" id="drawToggleBtn" onclick="toggleDrawMode()">🖍️ Draw: OFF</button>
+    <div class="color-picker" id="colorPicker">
+      <button class="color-btn active" style="background:#C62828;" onclick="setDrawColor('#C62828', this)"></button>
+      <button class="color-btn" style="background:#1565C0;" onclick="setDrawColor('#1565C0', this)"></button>
+      <button class="color-btn" style="background:#2E7D32;" onclick="setDrawColor('#2E7D32', this)"></button>
+      <button class="color-btn" style="background:#F9A825;" onclick="setDrawColor('#F9A825', this)"></button>
+      <button class="color-btn" style="background:#000000;" onclick="setDrawColor('#000000', this)"></button>
+      <button class="clear-btn" onclick="clearCanvas()">🗑️ Clear</button>
+    </div>
+  </div>
+  
+  <div class="header">
+    <h1>🧭 The Word Problem Explorer!</h1>
+    <div class="header-badge" id="hdrBadge">Welcome!</div>
+  </div>
+  <div class="nav">
+    <span class="nav-label">Questions:</span>
+    <div id="navRow" style="display:flex;gap:8px;"></div>
+  </div>
+  <div class="main"><div id="qArea"></div></div>
+  
+  <script>
+  const QS=[
+    {num:1,demo:true,text:"Hamza is 140 cm tall. Jarrett is 115 cm tall.",parts:[
+      {lbl:"a",q:"How much taller is Hamza than Jarrett?",type:"comp",hint:"Who is taller?",hO:["Hamza","Jarrett"],hA:"Hamza",nM:"Hamza",nL:"Jarrett",vM:140,vL:115,vD:25,u:"vD",eN:["140","115"],eO:"-",eA:"25",aV:"25",st:["Hamza is ","25"," cm taller than Jarrett."]},
+      {lbl:"b",q:"What is their total height?",type:"pw",hint:"What are we finding?",hO:["Total height","The difference"],hA:"Total height",nA:"Hamza",nB:"Jarrett",vA:140,vB:115,vT:255,u:"vT",eN:["140","115"],eO:"+",eA:"255",aV:"255",st:["Their total height is ","255"," cm."]}
+    ]},
+    {num:2,demo:true,text:"Titus has 150 pens. Khidr has 80 more pens than Titus.",parts:[
+      {lbl:"a",q:"How many pens does Khidr have?",type:"comp",hint:"Who has more pens?",hO:["Titus","Khidr"],hA:"Khidr",nM:"Khidr",nL:"Titus",vM:230,vL:150,vD:80,u:"vM",eN:["150","80"],eO:"+",eA:"230",aV:"230",st:["Khidr has ","230"," pens."]},
+      {lbl:"b",q:"How many pens do they have in all?",type:"pw",hint:"What are we finding?",hO:["Total pens","The difference"],hA:"Total pens",nA:"Titus",nB:"Khidr",vA:150,vB:230,vT:380,u:"vT",eN:["150","230"],eO:"+",eA:"380",aV:"380",st:["They have ","380"," pens in all."]}
+    ]},
+    {num:3,demo:true,text:"Elena baked 400 cupcakes for a school fair. She baked 150 in the morning and the rest in the afternoon.",parts:[
+      {lbl:"a",q:"How many cupcakes did she bake in the afternoon?",type:"pw",hint:"What is the total?",hO:["400 cupcakes","150 cupcakes"],hA:"400 cupcakes",nA:"Morning",nB:"Afternoon",vA:150,vB:250,vT:400,u:"vB",eN:["400","150"],eO:"-",eA:"250",aV:"250",st:["Elena baked ","250"," cupcakes in the afternoon."]},
+      {lbl:"b",q:"How many more cupcakes did she bake in the afternoon than in the morning?",type:"comp",hint:"Did Elena bake more in the morning or afternoon?",hO:["Morning","Afternoon"],hA:"Afternoon",nM:"Afternoon",nL:"Morning",vM:250,vL:150,vD:100,u:"vD",eN:["250","150"],eO:"-",eA:"100",aV:"100",st:["She baked ","100"," more cupcakes in the afternoon."],co:{v:"250",l:"Afternoon — from (a)"}}
+    ]},
+    {num:4,demo:false,text:"Sarah has 180 stickers. Sofia has 60 fewer stickers than Sarah.",parts:[
+      {lbl:"a",q:"How many stickers does Sofia have?",type:"comp",hint:"Who has more stickers?",hO:["Sarah","Sofia"],hA:"Sarah",nM:"Sarah",nL:"Sofia",vM:180,vL:120,vD:60,u:"vL",eN:["180","60"],eO:"-",eA:"120",aV:"120",st:["Sofia has ","120"," stickers."]},
+      {lbl:"b",q:"How many stickers do they have altogether?",type:"pw",hint:"What are we finding?",hO:["Total stickers","The difference"],hA:"Total stickers",nA:"Sarah",nB:"Sofia",vA:180,vB:120,vT:300,u:"vT",eN:["180","120"],eO:"+",eA:"300",aV:"300",st:["They have ","300"," stickers altogether."]}
+    ]},
+    {num:5,demo:false,text:"Zelig sold 230 cups of lemonade at a carnival. Ishraq sold 80 fewer cups than Zelig.",parts:[
+      {lbl:"a",q:"How many cups did Ishraq sell?",type:"comp",hint:"Who sold more?",hO:["Zelig","Ishraq"],hA:"Zelig",nM:"Zelig",nL:"Ishraq",vM:230,vL:150,vD:80,u:"vL",eN:["230","80"],eO:"-",eA:"150",aV:"150",st:["Ishraq sold ","150"," cups."]},
+      {lbl:"b",q:"How many cups did they sell in all?",type:"pw",hint:"What are we finding?",hO:["Total cups","The difference"],hA:"Total cups",nA:"Zelig",nB:"Ishraq",vA:230,vB:150,vT:380,u:"vT",eN:["230","150"],eO:"+",eA:"380",aV:"380",st:["They sold ","380"," cups in all."]}
+    ]},
+    {num:6,demo:false,text:"There are 300 students in the school hall. 170 are boys and the rest are girls.",parts:[
+      {lbl:"a",q:"How many girls are there?",type:"pw",hint:"Are there more boys or girls?",hO:["More boys","More girls"],hA:"More boys",nA:"Boys",nB:"Girls",vA:170,vB:130,vT:300,u:"vB",eN:["300","170"],eO:"-",eA:"130",aV:"130",st:["There are ","130"," girls."]},
+      {lbl:"b",q:"How many more boys than girls are there?",type:"comp",hint:"Are there more boys or girls?",hO:["Boys","Girls"],hA:"Boys",nM:"Boys",nL:"Girls",vM:170,vL:130,vD:40,u:"vD",eN:["170","130"],eO:"-",eA:"40",aV:"40",st:["There are ","40"," more boys than girls."],co:{v:"130",l:"Girls — from (a)"}}
+    ]},
+    {num:7,demo:false,text:"A bag of biscuits and a bag of sweets weigh 500 g altogether. The bag of biscuits weighs 320 g.",parts:[
+      {lbl:"a",q:"How much does the bag of sweets weigh?",type:"pw",hint:"What is the total?",hO:["500 g","320 g"],hA:"500 g",nA:"Biscuits",nB:"Sweets",vA:320,vB:180,vT:500,u:"vB",eN:["500","320"],eO:"-",eA:"180",aV:"180",st:["The bag of sweets weighs ","180"," g."]},
+      {lbl:"b",q:"How much heavier is the bag of biscuits than the bag of sweets?",type:"comp",hint:"Which is heavier?",hO:["Biscuits","Sweets"],hA:"Biscuits",nM:"Biscuits",nL:"Sweets",vM:320,vL:180,vD:140,u:"vD",eN:["320","180"],eO:"-",eA:"140",aV:"140",st:["The biscuits are ","140"," g heavier."],co:{v:"180",l:"180"}}
+    ]},
+    {num:8,demo:false,text:"A book and a water bottle cost $120 altogether. The water bottle costs $80.",parts:[
+      {lbl:"a",q:"How much does the book cost?",type:"pw",hint:"What is the total?",hO:["$120","$80"],hA:"$120",nA:"Bottle",nB:"Book",vA:80,vB:40,vT:120,u:"vB",eN:["120","80"],eO:"-",eA:"40",aV:"40",st:["The book costs $","40","."]},
+      {lbl:"b",q:"How much more does the water bottle cost than the book?",type:"comp",hint:"Which costs more?",hO:["Book","Bottle"],hA:"Bottle",nM:"Bottle",nL:"Book",vM:80,vL:40,vD:40,u:"vD",eN:["80","40"],eO:"-",eA:"40",aV:"40",st:["The bottle costs $","40"," more."],co:{v:"40",l:"Book — from (a)"}}
+    ]},
+    {num:9,demo:false,text:"Ayfan baked 120 chocolate cookies and 150 vanilla cookies. She sold 130 cookies.",parts:[
+      {lbl:"a",q:"How many cookies were there altogether?",type:"pw",hint:"What are we finding?",hO:["Total cookies","Cookies sold"],hA:"Total cookies",nA:"Choc",nB:"Vanilla",vA:120,vB:150,vT:270,u:"vT",eN:["120","150"],eO:"+",eA:"270",aV:"270",st:["There were ","270"," cookies altogether."]},
+      {lbl:"b",q:"How many cookies were not sold?",type:"pw",hint:"What is the total?",hO:["270 cookies","130 cookies"],hA:"270 cookies",nA:"Sold",nB:"Not sold",vA:130,vB:140,vT:270,u:"vB",eN:["270","130"],eO:"-",eA:"140",aV:"140",st:["","140"," cookies were not sold."],co:{v:"270",l:"Total — from (a)"}}
+    ]},
+    {num:10,demo:false,text:"Luke is 130 cm tall. Naylah is 20 cm taller than Luke.",parts:[
+      {lbl:"a",q:"How tall is Naylah?",type:"comp",hint:"Who is taller?",hO:["Luke","Naylah"],hA:"Naylah",nM:"Naylah",nL:"Luke",vM:150,vL:130,vD:20,u:"vM",eN:["130","20"],eO:"+",eA:"150",aV:"150",st:["Naylah is ","150"," cm tall."]},
+      {lbl:"b",q:"Joanna is 15 cm shorter than Naylah. How tall is Joanna?",type:"comp",hint:"Who is taller?",hO:["Naylah","Joanna"],hA:"Naylah",nM:"Naylah",nL:"Joanna",vM:150,vL:135,vD:15,u:"vL",eN:["150","15"],eO:"-",eA:"135",aV:"135",st:["Joanna is ","135"," cm tall."],co:{v:"150",l:"150"}}
+    ]}
+  ];
+  
+  let curQ=-1; 
+  let ST=QS.map(q=>q.parts.map(()=>({h:false,m:false,e:false,a:false})));
+  let dragSrc=null;
+  let SR={};
+  
+  function regS(id,ans,qi,pi,grp){SR[id]={ans:String(ans),qi,pi,grp};}
+  function freeS(id){delete SR[id];}
+  function openG(grp){return Object.values(SR).filter(s=>s.grp===grp).length;}
+  
+  // --- INTRO PAGE LOGIC ---
+  function showIntro(){
+    curQ=-1;
+    document.getElementById('hdrBadge').textContent='Welcome!';
+    document.getElementById('navRow').innerHTML='';
+    const area=document.getElementById('qArea');
+    
+    // Use placeholder graphics for intro (replace with your Base64 strings if you still have them)
+    area.innerHTML=`
+      <div class="intro-page">
+        <div class="intro-images">
+          <div style="width:100%; max-width:860px; height:200px; background:linear-gradient(90deg, #4FC3F7, #1565C0); border-radius:20px; box-shadow:0 8px 32px rgba(0,0,0,0.18); display:flex; align-items:center; justify-content:center; color:#fff; font-size:2rem; font-weight:bold;">Welcome to Word Problem Explorer!</div>
+          <div style="width:100%; max-width:860px; height:200px; background:linear-gradient(90deg, #FFD54F, #E65100); border-radius:20px; box-shadow:0 8px 32px rgba(0,0,0,0.18); display:flex; align-items:center; justify-content:center; color:#fff; font-size:2rem; font-weight:bold;">Let's Learn Models!</div>
+        </div>
+        <button class="start-btn" onclick="startApp()">Start Learning ➜</button>
+      </div>
+    `;
+  }
+  
+  function startApp() {
+    curQ=0;
+    render();
+  }
+  
+  function render(){
+    if (curQ === -1) {
+      showIntro();
+      return;
     }
-    partsHTML+=mkPart(curQ,i);
-    if(!ST[curQ][i].a){break;}
-  }
-  const allDone=ST[curQ].every(s=>s.a);
-  const nextBtn=allDone&&curQ<QS.length-1?`<button class="next-btn" onclick="nextQ()">Next Question ➜</button>`:'';
-  const lastBtn=allDone&&curQ===QS.length-1?`<button class="next-btn" style="background:linear-gradient(90deg,#6A1B9A,#8E24AA);">🏅 All Done! Great work!</button>`:'';
-
-  document.getElementById('qArea').innerHTML=`<div class="q-card">
-    <div class="q-top" style="align-items:flex-start;">
-      <div class="q-num">${q.num}</div>
-      <div class="q-problem">${topHeaderText} ${dp}</div>
-    </div>
-    <div class="parts-stack">${partsHTML}</div>
-  </div>${nextBtn}${lastBtn}`;
-  attachDrag();
-}
-
-function nextQ(){
-  if(curQ<QS.length-1){curQ++;render();window.scrollTo({top:0,behavior:'smooth'});}
-}
-
-function buildNav(){
-  const row=document.getElementById('navRow');row.innerHTML='';
-  QS.forEach((q,i)=>{
-    const b=document.createElement('button');
-    b.className='q-btn'+(q.demo?' demo':'')+(i===curQ?' active':'');
-    b.textContent=q.num;b.onclick=()=>{curQ=i;render();};
-    row.appendChild(b);
-  });
-}
-
-function mkPart(qi,pi){
-  const p=QS[qi].parts[pi];const s=ST[qi][pi];
-  return `<div class="part-col">
-    <div class="part-tag">PART (${p.lbl.toUpperCase()})</div>
-    ${step1(p,qi,pi,s)}${step2(p,qi,pi,s)}${step3(p,qi,pi,s)}${step4(p,qi,pi,s)}
-  </div>`;
-}
-
-function step1(p,qi,pi,s){
-  const opts=p.hO.map(o=>`<button class="hint-btn${s.h&&o===p.hA?' correct':''}" onclick="doHint(${qi},${pi},'${o.replace(/'/g,"&#39;")}')" ${s.h?'disabled':''}>${o}</button>`).join('');
-  return `<div class="step-block ${s.h?'done':''}">
-    <div class="step-head"><div class="step-circle">${s.h?'✓':'1'}</div><div class="step-title-txt">💬 ${p.hint}</div></div>
-    <div class="step-body open"><div class="hint-options">${opts}</div>${s.h?`<div class="ok-msg">✅ Correct!</div>`:''}</div></div>`;
-}
-
-function getNumTile(val,co){
-  if(co&&String(val)===String(co.v))return`<div class="tile carried-over" draggable="true" data-val="${val}" data-type="num">🔗 ${co.l}</div>`;
-  return`<div class="tile" draggable="true" data-val="${val}" data-type="num">${val}</div>`;
-}
-
-function svgArrow(x1,x2,y,color,id,ans,qi,pi,grp,done,label,dir){
-  const above = dir !== 'below';
-  const mid=(x1+x2)/2;
-  const ah=9,aw=12;
-  const lHead=`<polygon points="${x1},${y} ${x1+aw},${y-ah} ${x1+aw},${y+ah}" fill="${color}"/>`;
-  const rHead=`<polygon points="${x2},${y} ${x2-aw},${y-ah} ${x2-aw},${y+ah}" fill="${color}"/>`;
-  const line=`<line x1="${x1+aw}" y1="${y}" x2="${x2-aw}" y2="${y}" stroke="${color}" stroke-width="2.5"/>`;
-  if(done){
-    const textY = above ? y-14 : y+28;
-    return`${line}${lHead}${rHead}<text x="${mid}" y="${textY}" text-anchor="middle" font-family="Comic Sans MS,Comic Sans,cursive" font-size="20" font-weight="900" fill="${color}">${label}</text>`;
-  }
-  regS(id,String(ans),qi,pi,grp);
+    
+    SR={};
+    document.getElementById('hdrBadge').textContent=`Question ${curQ+1} of ${QS.length}`;
+    buildNav();
+    const q=QS[curQ];
+    const dp=q.demo?`<span class="demo-pill">⭐ Demo</span>`:'';
+    let topHeaderText=q.text;
+    if(q.parts.length>0){topHeaderText+=`<br><span style="color:var(--bar-yellow);">(${q.parts[0].lbl})</span> ${q.parts[0].q}`;}
+    let partsHTML='';
+    for(let i=0;i<q.parts.length;i++){
+      if(i>0){
+        let rt=q.text;
+        for(let j=0;j<=i;j++){rt+=`<br><span style="color:var(--bar-yellow);">(${q.parts[j].lbl})</span> ${q.parts[j].q}`;}
+        partsHTML+=`<div class="q-top" style="align-items:flex-start;border-top:5px dashed #BBDEFB;margin-top:20px;" id="header-part-${i}">
+          <div class="q-problem" style="margin:0;font-size:40px;font-weight:700;line-height:1.4;color:#fff;width:100%;">${rt}</div>
+        </div>`;
+      }
+      partsHTML+=mkPart(curQ,i);
+      if(!ST[curQ][i].a){break;}
+    }
+    const allDone=ST[curQ].every(s=>s.a);
+    const nextBtn=allDone&&curQ<QS.length-1?`<button class="next-btn" onclick="nextQ()">Next Question ➜</button>`:'';
+    const lastBtn=allDone&&curQ===QS.length-1?`<button class="next-btn" style="background:linear-gradient(90deg,#6A1B9A,#8E24AA);">🏅 All Done! Great work!</button>`:'';
   
-  // HEIGHT SET TO 54 TO PREVENT CUTTING OFF THE DOTTED BOX
-  const foY = above ? y-56 : y+8;
-  const slotEl=`<foreignObject x="${mid-75}" y="${foY}" width="150" height="54">
-    <div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;justify-content:center;align-items:center;width:100%;height:100%;">
-      <div class="ds" data-slot="${id}" id="${id}">?</div>
-    </div>
-  </foreignObject>`;
-  return`${line}${lHead}${rHead}${slotEl}`;
-}
-
-function compModel(p,qi,pi,done){
-  const grp=`m${qi}${pi}`;
-  const colEl=document.querySelector(".part-col");const availW=colEl?colEl.offsetWidth-200:600;
-  const W=Math.max(availW,380), NC=140, VLW=5;
-  const barH=65;
-  const barX=NC+VLW; 
-  const shortW=Math.round(W*(p.vL/p.vM));
-  const diffW=W-shortW;
-  const arrowTopY=20;
-  const lessBarY=35;
-  const moreBarY=lessBarY+barH+5;
-  const arrowBotY=moreBarY+barH+18;
-  
-  const totalW=W+NC+VLW+80; 
-  const viewBoxY = -65; 
-  const svgH = arrowBotY + 80;
-  const viewBoxH = svgH - viewBoxY; 
-  
-  const valL = p.u === 'vL' ? '?' : p.vL;
-  const valD = p.u === 'vD' ? '?' : p.vD;
-  const valM = p.u === 'vM' ? '?' : p.vM;
-  
-  function nameTxt(x,y,label){
-    return `<text x="${x}" y="${y}" text-anchor="end" font-family="Comic Sans MS,Comic Sans,cursive" font-size="14" font-weight="900" fill="#1A237E">${label}</text>`;
-  }
-  function nameSlot(id,ans,x,y){
-    regS(id,ans,qi,pi,grp);
-    return `<foreignObject x="${x-150}" y="${y-26}" width="150" height="54">
-      <div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;justify-content:flex-end;align-items:center;width:100%;height:100%;">
-        <div class="ns" data-slot="${id}" id="${id}" data-type="name">?</div>
+    document.getElementById('qArea').innerHTML=`<div class="q-card">
+      <div class="q-top" style="align-items:flex-start;">
+        <div class="q-num">${q.num}</div>
+        <div class="q-problem">${topHeaderText} ${dp}</div>
       </div>
-    </foreignObject>`;
+      <div class="parts-stack">${partsHTML}</div>
+    </div>${nextBtn}${lastBtn}`;
+    attachDrag();
   }
   
-  const lessMidY = lessBarY+barH/2;
-  const moreMidY = moreBarY+barH/2;
-  const nameX = NC; 
-  
-  const snl = done ? nameTxt(nameX-4, lessMidY+5, p.nL) : nameSlot(`${grp}nl`,p.nL, nameX-4, lessMidY);
-  const snm = done ? nameTxt(nameX-4, moreMidY+5, p.nM) : nameSlot(`${grp}nm`,p.nM, nameX-4, moreMidY);
-  const arr1 = svgArrow(barX, barX+shortW, arrowTopY, '#222', `${grp}vl`, valL, qi, pi, grp, done, valL, 'above');
-  const arr2 = svgArrow(barX+shortW, barX+W, arrowTopY, '#c62828', `${grp}vd`, valD, qi, pi, grp, done, valD, 'above');
-  const arr3 = svgArrow(barX, barX+W, arrowBotY, '#222', `${grp}vm`, valM, qi, pi, grp, done, valM, 'below');
-  
-  const lessBlue=`<rect x="${barX}" y="${lessBarY}" width="${shortW}" height="${barH}" rx="6" fill="#4FC3F7" stroke="#0288d1" stroke-width="3"/>`;
-  const lessDash=`<rect x="${barX+shortW}" y="${lessBarY}" width="${diffW}" height="${barH}" rx="6" fill="#FFCDD2" stroke="#e57373" stroke-width="3" stroke-dasharray="8,4"/>
-    <text x="${barX+shortW+diffW/2}" y="${lessBarY+barH/2+5}" text-anchor="middle" font-family="Comic Sans MS,Comic Sans,cursive" font-size="18" font-weight="900" fill="#c62828">difference</text>`;
-  const moreYellow=`<rect x="${barX}" y="${moreBarY}" width="${W}" height="${barH}" rx="6" fill="#FFD54F" stroke="#c8a000" stroke-width="3"/>`;
-  const vline=`<rect x="${NC}" y="${lessBarY-arrowTopY+5}" width="${VLW}" height="${moreBarY+barH-lessBarY+arrowTopY}" rx="2" fill="#222"/>`;
-  
-  let tileHtml='';
-  if(!done){
-    tileHtml+=`<div class="tile name-tile" draggable="true" data-val="${p.nL}" data-type="name">${p.nL}</div>`;
-    tileHtml+=`<div class="tile name-tile" draggable="true" data-val="${p.nM}" data-type="name">${p.nM}</div>`;
-    tileHtml+=getNumTile(valL, p.co);
-    tileHtml+=getNumTile(valD, p.co);
-    tileHtml+=getNumTile(valM, p.co);
+  function nextQ(){
+    if(curQ<QS.length-1){
+      curQ++;
+      clearCanvas(); // Clear drawings when advancing
+      render();
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
   }
-  const tiles=done?'':`<div class="tiles-area" id="tb${qi}${pi}">${tileHtml}</div>`;
   
-  return `${tiles}
-<div style="overflow:visible; padding-bottom:10px;">
-<svg style="overflow:visible;display:block;max-width:100%;" width="${totalW}" height="${viewBoxH}" viewBox="-60 ${viewBoxY} ${totalW} ${viewBoxH}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-  ${vline}
-  ${lessBlue}${lessDash}
-  ${moreYellow}
-  ${arr1}${arr2}
-  ${snl}
-  ${snm}
-  ${arr3}
-</svg>
-</div>
-${done?`<div class="ok-msg" style="margin-top:6px;">✅ Model complete!</div>`:`<div id="mm${qi}${pi}" class="err-msg"></div>`}`;
-}
-
-function pwModel(p,qi,pi,done){
-  const grp=`m${qi}${pi}`;
-  const colEl2=document.querySelector(".part-col");const availW2=colEl2?colEl2.offsetWidth-160:600;
-  const W=Math.max(availW2,380), barH=65;
-  const valA = p.u === 'vA' ? '?' : p.vA;
-  const valB = p.u === 'vB' ? '?' : p.vB;
-  const valT = p.u === 'vT' ? '?' : p.vT;
-  const leftW=Math.round(W*p.vA/p.vT);
-  const rightW=W-leftW;
+  function buildNav(){
+    const row=document.getElementById('navRow');row.innerHTML='';
+    QS.forEach((q,i)=>{
+      const b=document.createElement('button');
+      b.className='q-btn'+(q.demo?' demo':'')+(i===curQ?' active':'');
+      b.textContent=q.num;b.onclick=()=>{curQ=i;clearCanvas();render();};
+      row.appendChild(b);
+    });
+  }
   
-  const arrowTopY=14, barY=58, arrowBotY=barY+barH+18;
-  const totalW=W+80;
-  const viewBoxY = -65; 
-  const svgH = arrowBotY + 80;
-  const viewBoxH = svgH - viewBoxY; 
+  function mkPart(qi,pi){
+    const p=QS[qi].parts[pi];const s=ST[qi][pi];
+    return `<div class="part-col">
+      <div class="part-tag">PART (${p.lbl.toUpperCase()})</div>
+      ${step1(p,qi,pi,s)}${step2(p,qi,pi,s)}${step3(p,qi,pi,s)}${step4(p,qi,pi,s)}
+    </div>`;
+  }
   
-  const arrTop=svgArrow(0,W,arrowTopY,'#222',`${grp}t`,valT,qi,pi,grp,done,valT,'above');
-  const arrBL=svgArrow(0,leftW,arrowBotY,'#222',`${grp}va`,valA,qi,pi,grp,done,valA,'below');
-  const arrBR=svgArrow(leftW,W,arrowBotY,'#222',`${grp}vb`,valB,qi,pi,grp,done,valB,'below');
+  function step1(p,qi,pi,s){
+    const opts=p.hO.map(o=>`<button class="hint-btn${s.h&&o===p.hA?' correct':''}" onclick="doHint(${qi},${pi},'${o.replace(/'/g,"&#39;")}')" ${s.h?'disabled':''}>${o}</button>`).join('');
+    return `<div class="step-block ${s.h?'done':''}">
+      <div class="step-head"><div class="step-circle">${s.h?'✓':'1'}</div><div class="step-title-txt">💬 ${p.hint}</div></div>
+      <div class="step-body open"><div class="hint-options">${opts}</div>${s.h?`<div class="ok-msg">✅ Correct!</div>`:''}</div></div>`;
+  }
   
-  function nameInBar(id,ans,cx,cy){
-    if(done) return `<text x="${cx}" y="${cy+5}" text-anchor="middle" font-family="Comic Sans MS,Comic Sans,cursive" font-size="13" font-weight="900" fill="#1A237E">${ans}</text>`;
-    regS(id,ans,qi,pi,grp);
-    return `<foreignObject x="${cx-75}" y="${cy-26}" width="150" height="54">
+  function getNumTile(val,co){
+    if(co&&String(val)===String(co.v))return`<div class="tile carried-over" draggable="true" data-val="${val}" data-type="num">🔗 ${co.l}</div>`;
+    return`<div class="tile" draggable="true" data-val="${val}" data-type="num">${val}</div>`;
+  }
+  
+  function svgArrow(x1,x2,y,color,id,ans,qi,pi,grp,done,label,dir){
+    const above = dir !== 'below';
+    const mid=(x1+x2)/2;
+    const ah=9,aw=12;
+    const lHead=`<polygon points="${x1},${y} ${x1+aw},${y-ah} ${x1+aw},${y+ah}" fill="${color}"/>`;
+    const rHead=`<polygon points="${x2},${y} ${x2-aw},${y-ah} ${x2-aw},${y+ah}" fill="${color}"/>`;
+    const line=`<line x1="${x1+aw}" y1="${y}" x2="${x2-aw}" y2="${y}" stroke="${color}" stroke-width="2.5"/>`;
+    if(done){
+      const textY = above ? y-14 : y+28;
+      return`${line}${lHead}${rHead}<text x="${mid}" y="${textY}" text-anchor="middle" font-family="Comic Sans MS,Comic Sans,cursive" font-size="20" font-weight="900" fill="${color}">${label}</text>`;
+    }
+    regS(id,String(ans),qi,pi,grp);
+    
+    // FIXED HEIGHT & FOY TO PREVENT CLIPPING
+    const foY = above ? y-56 : y+8;
+    const slotEl=`<foreignObject x="${mid-75}" y="${foY}" width="150" height="54">
       <div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;justify-content:center;align-items:center;width:100%;height:100%;">
-        <div class="ns" data-slot="${id}" id="${id}" data-type="name">?</div>
+        <div class="ds" data-slot="${id}" id="${id}">?</div>
       </div>
     </foreignObject>`;
+    return`${line}${lHead}${rHead}${slotEl}`;
   }
   
-  const nA=nameInBar(`${grp}na`,p.nA,leftW/2,barY+barH/2);
-  const nB=nameInBar(`${grp}nb`,p.nB,leftW+rightW/2,barY+barH/2);
-  
-  const barLeft=`<rect x="0" y="${barY}" width="${leftW}" height="${barH}" rx="0" fill="#FFD54F" stroke="#222" stroke-width="3"/>`;
-  const barRight=`<rect x="${leftW}" y="${barY}" width="${rightW}" height="${barH}" rx="0" fill="#4FC3F7" stroke="#222" stroke-width="3" stroke-dasharray=""/>`;
-  const barBorder=`<rect x="0" y="${barY}" width="${W}" height="${barH}" rx="6" fill="none" stroke="#222" stroke-width="3"/>`;
-  const divider=`<line x1="${leftW}" y1="${barY}" x2="${leftW}" y2="${barY+barH}" stroke="#222" stroke-width="3"/>`;
-  
-  let tileHtml='';
-  if(!done){
-    [p.nA,p.nB].forEach(n=>tileHtml+=`<div class="tile name-tile" draggable="true" data-val="${n}" data-type="name">${n}</div>`);
-    tileHtml+=getNumTile(valA, p.co);
-    tileHtml+=getNumTile(valB, p.co);
-    tileHtml+=getNumTile(valT, p.co);
+  function compModel(p,qi,pi,done){
+    const grp=`m${qi}${pi}`;
+    const colEl=document.querySelector(".part-col");const availW=colEl?colEl.offsetWidth-200:600;
+    const W=Math.max(availW,380), NC=140, VLW=5;
+    const barH=65;
+    const barX=NC+VLW; 
+    const shortW=Math.round(W*(p.vL/p.vM));
+    const diffW=W-shortW;
+    const arrowTopY=20;
+    const lessBarY=35;
+    const moreBarY=lessBarY+barH+5;
+    const arrowBotY=moreBarY+barH+18;
+    
+    const totalW=W+NC+VLW+80; 
+    // PADDED VIEWBOX TO PREVENT CLIPPING
+    const viewBoxY = -65; 
+    const svgH = arrowBotY + 80;
+    const viewBoxH = svgH - viewBoxY; 
+    
+    const valL = p.u === 'vL' ? '?' : p.vL;
+    const valD = p.u === 'vD' ? '?' : p.vD;
+    const valM = p.u === 'vM' ? '?' : p.vM;
+    
+    function nameTxt(x,y,label){
+      return `<text x="${x}" y="${y}" text-anchor="end" font-family="Comic Sans MS,Comic Sans,cursive" font-size="14" font-weight="900" fill="#1A237E">${label}</text>`;
+    }
+    function nameSlot(id,ans,x,y){
+      regS(id,ans,qi,pi,grp);
+      // FIXED HEIGHT & Y OFFSET TO PREVENT CLIPPING
+      return `<foreignObject x="${x-150}" y="${y-26}" width="150" height="54">
+        <div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;justify-content:flex-end;align-items:center;width:100%;height:100%;">
+          <div class="ns" data-slot="${id}" id="${id}" data-type="name">?</div>
+        </div>
+      </foreignObject>`;
+    }
+    
+    const lessMidY = lessBarY+barH/2;
+    const moreMidY = moreBarY+barH/2;
+    const nameX = NC; 
+    
+    const snl = done ? nameTxt(nameX-4, lessMidY+5, p.nL) : nameSlot(`${grp}nl`,p.nL, nameX-4, lessMidY);
+    const snm = done ? nameTxt(nameX-4, moreMidY+5, p.nM) : nameSlot(`${grp}nm`,p.nM, nameX-4, moreMidY);
+    const arr1 = svgArrow(barX, barX+shortW, arrowTopY, '#222', `${grp}vl`, valL, qi, pi, grp, done, valL, 'above');
+    const arr2 = svgArrow(barX+shortW, barX+W, arrowTopY, '#c62828', `${grp}vd`, valD, qi, pi, grp, done, valD, 'above');
+    const arr3 = svgArrow(barX, barX+W, arrowBotY, '#222', `${grp}vm`, valM, qi, pi, grp, done, valM, 'below');
+    
+    const lessBlue=`<rect x="${barX}" y="${lessBarY}" width="${shortW}" height="${barH}" rx="6" fill="#4FC3F7" stroke="#0288d1" stroke-width="3"/>`;
+    const lessDash=`<rect x="${barX+shortW}" y="${lessBarY}" width="${diffW}" height="${barH}" rx="6" fill="#FFCDD2" stroke="#e57373" stroke-width="3" stroke-dasharray="8,4"/>
+      <text x="${barX+shortW+diffW/2}" y="${lessBarY+barH/2+5}" text-anchor="middle" font-family="Comic Sans MS,Comic Sans,cursive" font-size="18" font-weight="900" fill="#c62828">difference</text>`;
+    const moreYellow=`<rect x="${barX}" y="${moreBarY}" width="${W}" height="${barH}" rx="6" fill="#FFD54F" stroke="#c8a000" stroke-width="3"/>`;
+    const vline=`<rect x="${NC}" y="${lessBarY-arrowTopY+5}" width="${VLW}" height="${moreBarY+barH-lessBarY+arrowTopY}" rx="2" fill="#222"/>`;
+    
+    let tileHtml='';
+    if(!done){
+      tileHtml+=`<div class="tile name-tile" draggable="true" data-val="${p.nL}" data-type="name">${p.nL}</div>`;
+      tileHtml+=`<div class="tile name-tile" draggable="true" data-val="${p.nM}" data-type="name">${p.nM}</div>`;
+      tileHtml+=getNumTile(valL, p.co);
+      tileHtml+=getNumTile(valD, p.co);
+      tileHtml+=getNumTile(valM, p.co);
+    }
+    const tiles=done?'':`<div class="tiles-area" id="tb${qi}${pi}">${tileHtml}</div>`;
+    
+    return `${tiles}
+  <div style="overflow:visible; padding-bottom:10px;">
+  <svg style="overflow:visible;display:block;max-width:100%;" width="${totalW}" height="${viewBoxH}" viewBox="-60 ${viewBoxY} ${totalW} ${viewBoxH}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    ${vline}
+    ${lessBlue}${lessDash}
+    ${moreYellow}
+    ${arr1}${arr2}
+    ${snl}
+    ${snm}
+    ${arr3}
+  </svg>
+  </div>
+  ${done?`<div class="ok-msg" style="margin-top:6px;">✅ Model complete!</div>`:`<div id="mm${qi}${pi}" class="err-msg"></div>`}`;
   }
-  const tiles=done?'':`<div class="tiles-area" id="tb${qi}${pi}">${tileHtml}</div>`;
   
-  return `${tiles}
-<div style="overflow:visible; padding-bottom:10px;">
-<svg style="overflow:visible;display:block;max-width:100%;" width="${totalW}" height="${viewBoxH}" viewBox="-90 ${viewBoxY} ${totalW} ${viewBoxH}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-  ${barLeft}${barRight}${barBorder}${divider}
-  ${arrTop}
-  ${nA}${nB}
-  ${arrBL}${arrBR}
-</svg>
-</div>
-${done?`<div class="ok-msg" style="margin-top:6px;">✅ Model complete!</div>`:`<div id="mm${qi}${pi}" class="err-msg"></div>`}`;
-}
-
-function step2(p,qi,pi,s){
-  const u=s.h,d=s.m;
-  const body=u?(p.type==='comp'?compModel(p,qi,pi,d):pwModel(p,qi,pi,d)):'';
-  return`<div class="step-block ${!u?'locked':''} ${d?'done':''}">
-    <div class="step-head"><div class="step-circle">${d?'✓':'2'}</div><div class="step-title-txt">📊 Fill in the model</div></div>
-    <div class="step-body ${u?'open':''}">${body}</div></div>`;
-}
-
-function step3(p,qi,pi,s){
-  const u=s.m,d=s.e;const grp=`e${qi}${pi}`;
-  let body='';
-  if(u){
-    function es(id,ans){if(d)return`<div class="es ok">${ans}</div>`;regS(id,ans,qi,pi,grp);return`<div class="es" data-slot="${id}" id="${id}">?</div>`;}
-    function ops(id,ans){if(d)return`<div class="ops ok">${ans}</div>`;regS(id,ans,qi,pi,grp);return`<div class="ops" data-slot="${id}" id="${id}" data-type="op">?</div>`;}
-    const s1=es(`${grp}n1`,p.eN[0]),so=ops(`${grp}op`,p.eO),s2=es(`${grp}n2`,p.eN[1]);
-    const ab=d?`<div class="ans-box revealed">${p.eA}</div>`:`<div class="ans-box pending">?</div>`;
-    let th='';
-    if(!d){p.eN.forEach(n=>th+=`<div class="tile" draggable="true" data-val="${n}" data-type="num">${n}</div>`);['+','-'].forEach(o=>th+=`<div class="tile op-tile" draggable="true" data-val="${o}" data-type="op">${o}</div>`);}
-    body=`${d?'':`<div class="tiles-area" id="etb${qi}${pi}">${th}</div>`}
-    <div class="eq-row">${s1}${so}${s2}<div class="eq-eq">=</div>${ab}</div>
-    ${d?`<div class="ok-msg">✅ Correct! Answer = ${p.eA}</div>`:`<div id="em${qi}${pi}" class="err-msg"></div>`}`;
+  function pwModel(p,qi,pi,done){
+    const grp=`m${qi}${pi}`;
+    const colEl2=document.querySelector(".part-col");const availW2=colEl2?colEl2.offsetWidth-160:600;
+    const W=Math.max(availW2,380), barH=65;
+    const valA = p.u === 'vA' ? '?' : p.vA;
+    const valB = p.u === 'vB' ? '?' : p.vB;
+    const valT = p.u === 'vT' ? '?' : p.vT;
+    const leftW=Math.round(W*p.vA/p.vT);
+    const rightW=W-leftW;
+    
+    const arrowTopY=14, barY=58, arrowBotY=barY+barH+18;
+    const totalW=W+80;
+    // PADDED VIEWBOX TO PREVENT CLIPPING
+    const viewBoxY = -65; 
+    const svgH = arrowBotY + 80;
+    const viewBoxH = svgH - viewBoxY; 
+    
+    const arrTop=svgArrow(0,W,arrowTopY,'#222',`${grp}t`,valT,qi,pi,grp,done,valT,'above');
+    const arrBL=svgArrow(0,leftW,arrowBotY,'#222',`${grp}va`,valA,qi,pi,grp,done,valA,'below');
+    const arrBR=svgArrow(leftW,W,arrowBotY,'#222',`${grp}vb`,valB,qi,pi,grp,done,valB,'below');
+    
+    function nameInBar(id,ans,cx,cy){
+      if(done) return `<text x="${cx}" y="${cy+5}" text-anchor="middle" font-family="Comic Sans MS,Comic Sans,cursive" font-size="13" font-weight="900" fill="#1A237E">${ans}</text>`;
+      regS(id,ans,qi,pi,grp);
+      // FIXED HEIGHT & Y OFFSET TO PREVENT CLIPPING
+      return `<foreignObject x="${cx-75}" y="${cy-26}" width="150" height="54">
+        <div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;justify-content:center;align-items:center;width:100%;height:100%;">
+          <div class="ns" data-slot="${id}" id="${id}" data-type="name">?</div>
+        </div>
+      </foreignObject>`;
+    }
+    
+    const nA=nameInBar(`${grp}na`,p.nA,leftW/2,barY+barH/2);
+    const nB=nameInBar(`${grp}nb`,p.nB,leftW+rightW/2,barY+barH/2);
+    
+    const barLeft=`<rect x="0" y="${barY}" width="${leftW}" height="${barH}" rx="0" fill="#FFD54F" stroke="#222" stroke-width="3"/>`;
+    const barRight=`<rect x="${leftW}" y="${barY}" width="${rightW}" height="${barH}" rx="0" fill="#4FC3F7" stroke="#222" stroke-width="3" stroke-dasharray=""/>`;
+    const barBorder=`<rect x="0" y="${barY}" width="${W}" height="${barH}" rx="6" fill="none" stroke="#222" stroke-width="3"/>`;
+    const divider=`<line x1="${leftW}" y1="${barY}" x2="${leftW}" y2="${barY+barH}" stroke="#222" stroke-width="3"/>`;
+    
+    let tileHtml='';
+    if(!done){
+      [p.nA,p.nB].forEach(n=>tileHtml+=`<div class="tile name-tile" draggable="true" data-val="${n}" data-type="name">${n}</div>`);
+      tileHtml+=getNumTile(valA, p.co);
+      tileHtml+=getNumTile(valB, p.co);
+      tileHtml+=getNumTile(valT, p.co);
+    }
+    const tiles=done?'':`<div class="tiles-area" id="tb${qi}${pi}">${tileHtml}</div>`;
+    
+    return `${tiles}
+  <div style="overflow:visible; padding-bottom:10px;">
+  <svg style="overflow:visible;display:block;max-width:100%;" width="${totalW}" height="${viewBoxH}" viewBox="-90 ${viewBoxY} ${totalW} ${viewBoxH}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    ${barLeft}${barRight}${barBorder}${divider}
+    ${arrTop}
+    ${nA}${nB}
+    ${arrBL}${arrBR}
+  </svg>
+  </div>
+  ${done?`<div class="ok-msg" style="margin-top:6px;">✅ Model complete!</div>`:`<div id="mm${qi}${pi}" class="err-msg"></div>`}`;
   }
-  return`<div class="step-block ${!u?'locked':''} ${d?'done':''}">
-    <div class="step-head"><div class="step-circle">${d?'✓':'3'}</div><div class="step-title-txt">✏️ Fill in the equation</div></div>
-    <div class="step-body ${u?'open':''}">${body}</div></div>`;
-}
-
-function step4(p,qi,pi,s){
-  const u=s.e,d=s.a;let body='';
-  if(u){
-    if(d){body=`<div class="ans-statement">${p.st[0]}<span style="color:var(--green);font-weight:900;">${p.st[1]}</span>${p.st[2]||''}</div><div class="ok-msg">✅ Well done!</div>`;}
-    else{body=`<div class="ans-statement">${p.st[0]}<span class="ans-blank">____</span>${p.st[2]||''}</div>
-      <div class="ans-row"><input class="ans-input" id="ai${qi}${pi}" type="text" placeholder="Type answer…" onkeydown="if(event.key==='Enter')doAns(${qi},${pi})">
-      <button class="check-btn" onclick="doAns(${qi},${pi})">Check ✓</button></div><div id="am${qi}${pi}" class="err-msg"></div>`;}
+  
+  function step2(p,qi,pi,s){
+    const u=s.h,d=s.m;
+    const body=u?(p.type==='comp'?compModel(p,qi,pi,d):pwModel(p,qi,pi,d)):'';
+    return`<div class="step-block ${!u?'locked':''} ${d?'done':''}">
+      <div class="step-head"><div class="step-circle">${d?'✓':'2'}</div><div class="step-title-txt">📊 Fill in the model</div></div>
+      <div class="step-body ${u?'open':''}">${body}</div></div>`;
   }
-  return`<div class="step-block ${!u?'locked':''} ${d?'done':''}">
-    <div class="step-head"><div class="step-circle">${d?'✓':'4'}</div><div class="step-title-txt">📝 Write the answer</div></div>
-    <div class="step-body ${u?'open':''}">${body}</div></div>`;
-}
-
-function doHint(qi,pi,chosen){
-  const p=QS[qi].parts[pi];
-  if(chosen===p.hA){ST[qi][pi].h=true;render();}
-  else document.querySelectorAll('.hint-btn').forEach(b=>{if(b.textContent.trim()===chosen){b.classList.add('wrong');setTimeout(()=>b.classList.remove('wrong'),400);}});
-}
-
-function celebrate(){
-  const phrases=['🌟 Amazing!','🎉 Well done!','⭐ Superstar!','🏆 Excellent!','🎊 Brilliant!'];
-  const msg=phrases[Math.floor(Math.random()*phrases.length)];
-  const div=document.createElement('div');
-  div.className='celebrate';
-  div.innerHTML=`<div class="celebrate-msg">${msg}</div>`;
-  document.body.appendChild(div);
-  try{
-    const ctx=new(window.AudioContext||window.webkitAudioContext)();
-    const notes=[523,659,784,1047];
-    notes.forEach((f,i)=>{
-      const o=ctx.createOscillator();const g=ctx.createGain();
-      o.connect(g);g.connect(ctx.destination);
-      o.frequency.value=f;o.type='sine';
-      g.gain.setValueAtTime(0.3,ctx.currentTime+i*0.12);
-      g.gain.exponentialRampToValueAtTime(0.01,ctx.currentTime+i*0.12+0.25);
-      o.start(ctx.currentTime+i*0.12);o.stop(ctx.currentTime+i*0.12+0.3);
+  
+  function step3(p,qi,pi,s){
+    const u=s.m,d=s.e;const grp=`e${qi}${pi}`;
+    let body='';
+    if(u){
+      function es(id,ans){if(d)return`<div class="es ok">${ans}</div>`;regS(id,ans,qi,pi,grp);return`<div class="es" data-slot="${id}" id="${id}">?</div>`;}
+      function ops(id,ans){if(d)return`<div class="ops ok">${ans}</div>`;regS(id,ans,qi,pi,grp);return`<div class="ops" data-slot="${id}" id="${id}" data-type="op">?</div>`;}
+      const s1=es(`${grp}n1`,p.eN[0]),so=ops(`${grp}op`,p.eO),s2=es(`${grp}n2`,p.eN[1]);
+      const ab=d?`<div class="ans-box revealed">${p.eA}</div>`:`<div class="ans-box pending">?</div>`;
+      let th='';
+      if(!d){p.eN.forEach(n=>th+=`<div class="tile" draggable="true" data-val="${n}" data-type="num">${n}</div>`);['+','-'].forEach(o=>th+=`<div class="tile op-tile" draggable="true" data-val="${o}" data-type="op">${o}</div>`);}
+      body=`${d?'':`<div class="tiles-area" id="etb${qi}${pi}">${th}</div>`}
+      <div class="eq-row">${s1}${so}${s2}<div class="eq-eq">=</div>${ab}</div>
+      ${d?`<div class="ok-msg">✅ Correct! Answer = ${p.eA}</div>`:`<div id="em${qi}${pi}" class="err-msg"></div>`}`;
+    }
+    return`<div class="step-block ${!u?'locked':''} ${d?'done':''}">
+      <div class="step-head"><div class="step-circle">${d?'✓':'3'}</div><div class="step-title-txt">✏️ Fill in the equation</div></div>
+      <div class="step-body ${u?'open':''}">${body}</div></div>`;
+  }
+  
+  function step4(p,qi,pi,s){
+    const u=s.e,d=s.a;let body='';
+    if(u){
+      if(d){body=`<div class="ans-statement">${p.st[0]}<span style="color:var(--green);font-weight:900;">${p.st[1]}</span>${p.st[2]||''}</div><div class="ok-msg">✅ Well done!</div>`;}
+      else{body=`<div class="ans-statement">${p.st[0]}<span class="ans-blank">____</span>${p.st[2]||''}</div>
+        <div class="ans-row"><input class="ans-input" id="ai${qi}${pi}" type="text" placeholder="Type answer…" onkeydown="if(event.key==='Enter')doAns(${qi},${pi})">
+        <button class="check-btn" onclick="doAns(${qi},${pi})">Check ✓</button></div><div id="am${qi}${pi}" class="err-msg"></div>`;}
+    }
+    return`<div class="step-block ${!u?'locked':''} ${d?'done':''}">
+      <div class="step-head"><div class="step-circle">${d?'✓':'4'}</div><div class="step-title-txt">📝 Write the answer</div></div>
+      <div class="step-body ${u?'open':''}">${body}</div></div>`;
+  }
+  
+  function doHint(qi,pi,chosen){
+    const p=QS[qi].parts[pi];
+    if(chosen===p.hA){ST[qi][pi].h=true;render();}
+    else document.querySelectorAll('.hint-btn').forEach(b=>{if(b.textContent.trim()===chosen){b.classList.add('wrong');setTimeout(()=>b.classList.remove('wrong'),400);}});
+  }
+  
+  function celebrate(){
+    const phrases=['🌟 Amazing!','🎉 Well done!','⭐ Superstar!','🏆 Excellent!','🎊 Brilliant!'];
+    const msg=phrases[Math.floor(Math.random()*phrases.length)];
+    const div=document.createElement('div');
+    div.className='celebrate';
+    div.innerHTML=`<div class="celebrate-msg">${msg}</div>`;
+    document.body.appendChild(div);
+    try{
+      const ctx=new(window.AudioContext||window.webkitAudioContext)();
+      const notes=[523,659,784,1047];
+      notes.forEach((f,i)=>{
+        const o=ctx.createOscillator();const g=ctx.createGain();
+        o.connect(g);g.connect(ctx.destination);
+        o.frequency.value=f;o.type='sine';
+        g.gain.setValueAtTime(0.3,ctx.currentTime+i*0.12);
+        g.gain.exponentialRampToValueAtTime(0.01,ctx.currentTime+i*0.12+0.25);
+        o.start(ctx.currentTime+i*0.12);o.stop(ctx.currentTime+i*0.12+0.3);
+      });
+    }catch(e){}
+    setTimeout(()=>div.remove(),2200);
+  }
+  
+  function doAns(qi,pi){
+    const p=QS[qi].parts[pi];
+    const inp=document.getElementById(`ai${qi}${pi}`);
+    const msg=document.getElementById(`am${qi}${pi}`);
+    if(!inp)return;
+    if(inp.value.trim()===String(p.aV)){
+      inp.classList.add('correct');ST[qi][pi].a=true;
+      const allDone=ST[qi].every(s=>s.a);
+      if(allDone){celebrate();}
+      setTimeout(()=>{render();const nh=document.getElementById(`header-part-${pi+1}`);if(nh)nh.scrollIntoView({behavior:"smooth",block:"start"});},500);
+    } else {
+      inp.classList.add('wrong');if(msg)msg.textContent='❌ Try again!';
+      setTimeout(()=>{inp.classList.remove('wrong');inp.value='';if(msg)msg.textContent='';},800);
+    }
+  }
+  
+  function attachDrag(){
+    document.querySelectorAll('.tile[draggable="true"]').forEach(t=>{
+      t.addEventListener('dragstart',e=>{dragSrc=t;t.classList.add('dragging');e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',t.dataset.val);});
+      t.addEventListener('dragend',()=>{t.classList.remove('dragging');dragSrc=null;});
     });
-  }catch(e){}
-  setTimeout(()=>div.remove(),2200);
-}
-
-function doAns(qi,pi){
-  const p=QS[qi].parts[pi];
-  const inp=document.getElementById(`ai${qi}${pi}`);
-  const msg=document.getElementById(`am${qi}${pi}`);
-  if(!inp)return;
-  if(inp.value.trim()===String(p.aV)){
-    inp.classList.add('correct');ST[qi][pi].a=true;
-    const allDone=ST[qi].every(s=>s.a);
-    if(allDone){celebrate();}
-    setTimeout(()=>{render();const nh=document.getElementById(`header-part-${pi+1}`);if(nh)nh.scrollIntoView({behavior:"smooth",block:"start"});},500);
-  } else {
-    inp.classList.add('wrong');if(msg)msg.textContent='❌ Try again!';
-    setTimeout(()=>{inp.classList.remove('wrong');inp.value='';if(msg)msg.textContent='';},800);
-  }
-}
-
-function attachDrag(){
-  document.querySelectorAll('.tile[draggable="true"]').forEach(t=>{
-    t.addEventListener('dragstart',e=>{dragSrc=t;t.classList.add('dragging');e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',t.dataset.val);});
-    t.addEventListener('dragend',()=>{t.classList.remove('dragging');dragSrc=null;});
-  });
-  document.querySelectorAll('[data-slot]').forEach(slot=>{
-    slot.addEventListener('dragover',e=>{e.preventDefault();slot.classList.add('over');});
-    slot.addEventListener('dragleave',()=>slot.classList.remove('over'));
-    slot.addEventListener('drop',e=>{
-      e.preventDefault();slot.classList.remove('over');
-      if(!dragSrc)return;
-      const sid=slot.dataset.slot;const reg=SR[sid];if(!reg)return;
-      const val=String(dragSrc.dataset.val);
-      if(val===reg.ans){
-        slot.textContent=val;slot.classList.add('ok');
-        slot.classList.remove('ds','ns','es','ops','over');
-        slot.removeAttribute('data-slot');freeS(sid);dragSrc.remove();dragSrc=null;
-        if(openG(reg.grp)===0){
-          if(reg.grp.startsWith('e'))ST[reg.qi][reg.pi].e=true;
-          else ST[reg.qi][reg.pi].m=true;
-          setTimeout(()=>render(),350);
-        }
-      } else{slot.classList.add('bad');setTimeout(()=>slot.classList.remove('bad'),400);}
+    document.querySelectorAll('[data-slot]').forEach(slot=>{
+      slot.addEventListener('dragover',e=>{e.preventDefault();slot.classList.add('over');});
+      slot.addEventListener('dragleave',()=>slot.classList.remove('over'));
+      slot.addEventListener('drop',e=>{
+        e.preventDefault();slot.classList.remove('over');
+        if(!dragSrc)return;
+        const sid=slot.dataset.slot;const reg=SR[sid];if(!reg)return;
+        const val=String(dragSrc.dataset.val);
+        if(val===reg.ans){
+          slot.textContent=val;slot.classList.add('ok');
+          slot.classList.remove('ds','ns','es','ops','over');
+          slot.removeAttribute('data-slot');freeS(sid);dragSrc.remove();dragSrc=null;
+          if(openG(reg.grp)===0){
+            if(reg.grp.startsWith('e'))ST[reg.qi][reg.pi].e=true;
+            else ST[reg.qi][reg.pi].m=true;
+            setTimeout(()=>render(),350);
+          }
+        } else{slot.classList.add('bad');setTimeout(()=>slot.classList.remove('bad'),400);}
+      });
     });
+  }
+  
+  // --- DRAWING LOGIC ---
+  const canvas = document.getElementById('drawCanvas');
+  const ctx2d = canvas.getContext('2d');
+  let isDrawMode = false;
+  let isDrawing = false;
+  let currentColor = '#C62828';
+  
+  function resizeCanvas() {
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    tempCanvas.getContext('2d').drawImage(canvas, 0, 0);
+    
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    
+    ctx2d.drawImage(tempCanvas, 0, 0);
+    ctx2d.lineCap = 'round';
+    ctx2d.lineJoin = 'round';
+    ctx2d.lineWidth = 4;
+  }
+  
+  function toggleDrawMode() {
+    isDrawMode = !isDrawMode;
+    const btn = document.getElementById('drawToggleBtn');
+    const picker = document.getElementById('colorPicker');
+    
+    if (isDrawMode) {
+      btn.innerHTML = '🖍️ Draw: ON';
+      btn.classList.add('on');
+      picker.classList.add('show');
+      canvas.classList.add('active');
+    } else {
+      btn.innerHTML = '🖍️ Draw: OFF';
+      btn.classList.remove('on');
+      picker.classList.remove('show');
+      canvas.classList.remove('active');
+    }
+  }
+  
+  function setDrawColor(color, btn) {
+    currentColor = color;
+    document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  
+  function clearCanvas() {
+    ctx2d.clearRect(0, 0, canvas.width, canvas.height);
+  }
+  
+  function startDrawing(e) {
+    if (!isDrawMode) return;
+    isDrawing = true;
+    draw(e);
+  }
+  
+  function stopDrawing() {
+    isDrawing = false;
+    ctx2d.beginPath();
+  }
+  
+  function draw(e) {
+    if (!isDrawing || !isDrawMode) return;
+    e.preventDefault(); // Prevents scrolling while drawing on mobile
+    
+    let x, y;
+    if (e.type.includes('touch')) {
+      x = e.touches[0].clientX;
+      y = e.touches[0].clientY;
+    } else {
+      x = e.clientX;
+      y = e.clientY;
+    }
+  
+    ctx2d.strokeStyle = currentColor;
+    ctx2d.lineTo(x, y);
+    ctx2d.stroke();
+    ctx2d.beginPath();
+    ctx2d.moveTo(x, y);
+  }
+  
+  // Attach event listeners for drawing
+  canvas.addEventListener('mousedown', startDrawing);
+  canvas.addEventListener('mousemove', draw);
+  canvas.addEventListener('mouseup', stopDrawing);
+  canvas.addEventListener('mouseout', stopDrawing);
+  
+  canvas.addEventListener('touchstart', startDrawing, {passive: false});
+  canvas.addEventListener('touchmove', draw, {passive: false});
+  canvas.addEventListener('touchend', stopDrawing);
+  canvas.addEventListener('touchcancel', stopDrawing);
+  
+  window.addEventListener("resize",()=>{
+    clearTimeout(window._rt);
+    window._rt=setTimeout(render,150);
+    resizeCanvas();
   });
-}
-
-render();
-window.addEventListener("resize",()=>{clearTimeout(window._rt);window._rt=setTimeout(render,150);});
-</script>
-</body>
-</html>
+  
+  // Initialize Canvas & App
+  resizeCanvas();
+  render();
+  </script>
+  </body>
+  </html>
